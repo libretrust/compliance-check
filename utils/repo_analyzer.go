@@ -5,6 +5,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/libretrust/compliance-check/data"
+	"gopkg.in/yaml.v2"
 )
 
 var goRepos []string
@@ -26,6 +30,84 @@ func RepositoryAnalyzer(path string) {
 	fmt.Println(containerfileRepos)
 	fmt.Print("Helm Repos:")
 	fmt.Println(helmRepos)
+	sbom := &data.SBOM{
+		GeneratedDate: time.Now().Format(time.RFC3339),
+	}
+
+	helms := make(map[string]*data.Repo)
+	containers := make(map[string]*data.Repo)
+	node := make(map[string]*data.Repo)
+	python := make(map[string]*data.Repo)
+	goReposMap := make(map[string]*data.Repo)
+
+	for _, repo := range helmRepos {
+		helms[repo] = &data.Repo{
+			Name: repo,
+			Type: "helm",
+		}
+	}
+
+	for _, repo := range containerfileRepos {
+		containers[repo] = &data.Repo{
+			Name: repo,
+			Type: "containerfile",
+		}
+	}
+
+	for _, repo := range nodeRepos {
+		node[repo] = &data.Repo{
+			Name: repo,
+			Type: "node",
+		}
+	}
+
+	for _, repo := range pythonRepos {
+		python[repo] = &data.Repo{
+			Name: repo,
+			Type: "python",
+		}
+	}
+
+	for _, repo := range goRepos {
+		goReposMap[repo] = &data.Repo{
+			Name: repo,
+			Type: "go",
+		}
+	}
+
+	for _, repo := range helms {
+		analyzeHelmRepo(repo)
+		sbom.Repos = append(sbom.Repos, repo)
+	}
+
+	for _, repo := range containers {
+		analyzeContainerfileRepo(repo)
+		sbom.Repos = append(sbom.Repos, repo)
+	}
+
+	for _, repo := range node {
+		analyzeNodeRepo(repo)
+		sbom.Repos = append(sbom.Repos, repo)
+	}
+
+	for _, repo := range python {
+		analyzePythonRepo(repo)
+		sbom.Repos = append(sbom.Repos, repo)
+	}
+
+	for _, repo := range goReposMap {
+		analyzeGoRepo(repo)
+		sbom.Repos = append(sbom.Repos, repo)
+	}
+
+	fmt.Println("SBOM:")
+
+	yamldata, err := yaml.Marshal(sbom)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(yamldata))
+
 }
 
 // dirAnalyzer() analyzes directory and tries to find known types of repositories or subrepos

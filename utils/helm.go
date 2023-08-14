@@ -1,5 +1,7 @@
 package utils
 
-func analyzeHelmRepo(path string) {
+import "github.com/libretrust/compliance-check/data"
+
+func analyzeHelmRepo(repo *data.Repo) {
 
 }

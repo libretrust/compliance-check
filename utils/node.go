@@ -1,5 +1,7 @@
 package utils
 
-func analyzeNodeRepo(path string) {
+import "github.com/libretrust/compliance-check/data"
+
+func analyzeNodeRepo(repo *data.Repo) {
 
 }
